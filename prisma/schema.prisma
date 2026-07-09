@@ -26,7 +26,7 @@ model User {
 }
 
 model Attribute {
-  id                String              @id
+  id       String @id @default(cuid())
   category          String
   name              String
   type              AttributeType
@@ -37,7 +37,7 @@ model Attribute {
 }
 
 model CV {
-  id          String        @id
+id       String @id @default(cuid())
   title       String
   userId      String
   positionId  String
@@ -72,7 +72,7 @@ model CVProject {
 }
 
 model Discussion {
-  id       String @id
+id       String @id @default(cuid())
   text     String
   cvId     String
   authorId String
@@ -90,7 +90,7 @@ model Like {
 }
 
 model Position {
-  id                String              @id
+id       String @id @default(cuid())
   title             String
   version           Int                 @default(1)
   CV                CV[]
@@ -108,7 +108,7 @@ model PositionAttribute {
 }
 
 model Project {
-  id          String      @id
+id       String @id @default(cuid())
   title       String
   description String
   tags        String[]
