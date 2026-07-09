@@ -7,10 +7,141 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  firstName String
-  lastName  String
-  createdAt DateTime @default(now())
+  id            String          @id @default(cuid())
+  createdAt     DateTime        @default(now())
+  email         String          @unique
+  firstName     String
+  lastName      String
+  password      String
+  role          UserRole
+  updatedAt     DateTime
+  version       Int             @default(1)
+  CV            CV[]
+  Discussion    Discussion[]
+  Like          Like[]
+  Project       Project[]
+  UserAttribute UserAttribute[]
+}
+
+model Attribute {
+  id                String              @id
+  category          String
+  name              String
+  type              AttributeType
+  options           String[]
+  CVAttribute       CVAttribute[]
+  PositionAttribute PositionAttribute[]
+  UserAttribute     UserAttribute[]
+}
+
+model CV {
+  id          String        @id
+  title       String
+  userId      String
+  positionId  String
+  version     Int           @default(1)
+  Position    Position      @relation(fields: [positionId], references: [id])
+  User        User          @relation(fields: [userId], references: [id])
+  CVAttribute CVAttribute[]
+  CVProject   CVProject[]
+  Discussion  Discussion[]
+  Like        Like[]
+
+  @@unique([userId, positionId])
+}
+
+model CVAttribute {
+  cvId        String
+  attributeId String
+  value       String
+  Attribute   Attribute @relation(fields: [attributeId], references: [id])
+  CV          CV        @relation(fields: [cvId], references: [id], onDelete: Cascade)
+
+  @@id([cvId, attributeId])
+}
+
+model CVProject {
+  cvId      String
+  projectId String
+  CV        CV      @relation(fields: [cvId], references: [id])
+  Project   Project @relation(fields: [projectId], references: [id])
+
+  @@id([cvId, projectId])
+}
+
+model Discussion {
+  id       String @id
+  text     String
+  cvId     String
+  authorId String
+  User     User   @relation(fields: [authorId], references: [id])
+  CV       CV     @relation(fields: [cvId], references: [id])
+}
+
+model Like {
+  cvId        String
+  recruiterId String
+  CV          CV     @relation(fields: [cvId], references: [id])
+  User        User   @relation(fields: [recruiterId], references: [id])
+
+  @@id([cvId, recruiterId])
+}
+
+model Position {
+  id                String              @id
+  title             String
+  version           Int                 @default(1)
+  CV                CV[]
+  PositionAttribute PositionAttribute[]
+}
+
+model PositionAttribute {
+  positionId  String
+  attributeId String
+  required    Boolean   @default(false)
+  Attribute   Attribute @relation(fields: [attributeId], references: [id])
+  Position    Position  @relation(fields: [positionId], references: [id])
+
+  @@id([positionId, attributeId])
+}
+
+model Project {
+  id          String      @id
+  title       String
+  description String
+  tags        String[]
+  startDate   DateTime
+  endDate     DateTime?
+  userId      String
+  CVProject   CVProject[]
+  User        User        @relation(fields: [userId], references: [id])
+}
+
+model UserAttribute {
+  userId      String
+  attributeId String
+  value       String
+  Attribute   Attribute @relation(fields: [attributeId], references: [id])
+  User        User      @relation(fields: [userId], references: [id])
+
+  @@id([userId, attributeId])
+}
+
+enum AttributeType {
+  STRING
+  TEXT
+  IMAGE
+  NUMERIC
+  DATE
+  PERIOD
+  BOOLEAN
+  DROPDOWN
+}
+
+enum UserRole {
+  CANDIDATE
+  RECRUITER
+  ADMIN
 }
