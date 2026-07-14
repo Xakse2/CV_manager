@@ -12,7 +12,7 @@ export const getAllAttributes = async (req: Request, res: Response) => {
 };
 
 export const createAttribute = async (req: Request, res: Response) => {
-  const { name, type, category, options } = req.body;
+  const { name, type, category, options, isSystem } = req.body;
 
   try {
     const newAttribute = await prisma.attribute.create({
@@ -21,6 +21,7 @@ export const createAttribute = async (req: Request, res: Response) => {
         type,
         category,
         options,
+        isSystem,
       },
     });
     res.status(201).json(newAttribute);
@@ -35,7 +36,11 @@ export const createAttribute = async (req: Request, res: Response) => {
 };
 
 export const deleteAttribute = async (req: Request, res: Response) => {
-  const { id } = req.body;
+  const { id } = req.params;
+
+  if (!id || typeof id !== "string") {
+    return res.status(400).json({ error: "Invalid or missing attribute ID" });
+  }
 
   try {
     await prisma.attribute.delete({

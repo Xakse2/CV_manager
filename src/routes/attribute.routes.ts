@@ -5,10 +5,10 @@ import {
   deleteAttribute,
 } from "../controllers/attribute.controller.js";
 
-const router: Router = Router();
+const routerAttribute: Router = Router();
 
-router.get("/", getAllAttributes);
-router.post("/", createAttribute);
-router.delete("/:id", deleteAttribute);
+routerAttribute.get("/", getAllAttributes);
+routerAttribute.post("/", createAttribute);
+routerAttribute.delete("/:id", deleteAttribute);
 
-export default router;
+export default routerAttribute;
