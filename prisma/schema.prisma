@@ -31,48 +31,37 @@ model Attribute {
   name              String
   type              AttributeType
   options           String[]
-  CVAttribute       CVAttribute[]
+  PositionAccessRule PositionAccessRule[]
   PositionAttribute PositionAttribute[]
   UserAttribute     UserAttribute[]
+  isSystem  Boolean  @default(false)
 }
 
 model CV {
-id       String @id @default(cuid())
-  title       String
-  userId      String
-  positionId  String
-  version     Int           @default(1)
-  Position    Position      @relation(fields: [positionId], references: [id])
-  User        User          @relation(fields: [userId], references: [id])
-  CVAttribute CVAttribute[]
+  id         String      @id @default(cuid())
+  userId     String
+  positionId String
+  version    Int         @default(1)
+  isPublished Boolean    @default(false)
+  Position   Position    @relation(fields: [positionId], references: [id])
+  User       User        @relation(fields: [userId], references: [id])
+  Discussion Discussion[]
+  Like       Like[]
   CVProject   CVProject[]
-  Discussion  Discussion[]
-  Like        Like[]
 
   @@unique([userId, positionId])
 }
-
-model CVAttribute {
-  cvId        String
-  attributeId String
-  value       String
-  Attribute   Attribute @relation(fields: [attributeId], references: [id])
-  CV          CV        @relation(fields: [cvId], references: [id], onDelete: Cascade)
-
-  @@id([cvId, attributeId])
-}
-
 model CVProject {
   cvId      String
   projectId String
-  CV        CV      @relation(fields: [cvId], references: [id])
+  CV        CV      @relation(fields: [cvId], references: [id], onDelete: Cascade)
   Project   Project @relation(fields: [projectId], references: [id])
 
   @@id([cvId, projectId])
 }
 
 model Discussion {
-id       String @id @default(cuid())
+  id       String @id @default(cuid())
   text     String
   cvId     String
   authorId String
@@ -90,13 +79,27 @@ model Like {
 }
 
 model Position {
-id       String @id @default(cuid())
+  id                String              @id @default(cuid())
   title             String
   version           Int                 @default(1)
+  company           String
+  description       String
+  salaryFrom        Int?
+  salaryTo          Int?
   CV                CV[]
   PositionAttribute PositionAttribute[]
+  PositionAccessRule PositionAccessRule[]
 }
 
+model PositionAccessRule {
+  id          String    @id @default(cuid())
+  positionId  String
+  attributeId String
+  operator    String
+  value       String
+  Attribute   Attribute @relation(fields: [attributeId], references: [id])
+  Position    Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
+}
 model PositionAttribute {
   positionId  String
   attributeId String
