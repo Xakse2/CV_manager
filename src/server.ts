@@ -6,28 +6,26 @@ import express, {
 import cors from "cors";
 import routerAttribute from "./routes/attribute.routes.js";
 import routerVacancy from "./routes/vacancy.routes.js";
-
-const mockAuth = (req: Request, res: Response, next: NextFunction) => {
-  (req as any).user = {
-    id: "mockID1",
-    email: "123@123.com",
-    firstName: "R",
-    lastName: "RR",
-
-    role: "RECRUITER",
-  };
-  next();
-};
+import routerAuth from "./routes/auth.routes.js";
+import cookieParser from "cookie-parser";
+import { authMiddleware } from "./middleware/auth.middleware.js";
+import routerUser from "./routes/user.routes.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
 
-app.use(mockAuth);
-
-app.use("/api/attributes", routerAttribute);
-app.use("/api/vacancies", routerVacancy);
+app.use("/api/auth", routerAuth);
+app.use("/api/attributes", authMiddleware, routerAttribute);
+app.use("/api/vacancies", authMiddleware, routerVacancy);
+app.use("/api/users", routerUser);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
