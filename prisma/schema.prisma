@@ -23,6 +23,8 @@ model User {
   Like          Like[]
   Project       Project[]
   UserAttribute UserAttribute[]
+
+  refreshToken  String?
 }
 
 model Attribute {
