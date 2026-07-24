@@ -37,10 +37,13 @@ export const updateProject = async (
   res: Response
 ) => {
   try {
+    const { title, description, startDate, endDate, tags } = req.body;
+
     const project = await updateExistingProject(
       req.user.userId,
       req.params.id,
-      req.body
+      { title, description, startDate, endDate, tags },
+      req.user.role === "ADMIN"
     );
 
     return res.json(project);
@@ -49,9 +52,7 @@ export const updateProject = async (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2025"
     ) {
-      return res.status(404).json({
-        error: "Project not found",
-      });
+      return res.status(404).json({ error: "Project not found" });
     }
 
     return res.status(400).json({
@@ -66,7 +67,11 @@ export const deleteProject = async (
   res: Response
 ) => {
   try {
-    await removeProject(req.user.userId, req.params.id);
+    await removeProject(
+      req.user.userId,
+      req.params.id,
+      req.user.role === "ADMIN"
+    );
 
     return res.sendStatus(204);
   } catch (error) {
