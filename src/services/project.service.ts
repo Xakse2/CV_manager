@@ -46,32 +46,56 @@ export const createNewProject = async (
 export const updateExistingProject = async (
   userId: string,
   projectId: string,
-  data: UpdateProjectDto
+  data: UpdateProjectDto,
+  isAdmin = false
 ) => {
   return prisma.project.update({
-    where: {
-      id: projectId,
-      userId,
-    },
+    where: isAdmin
+      ? {
+          id: projectId,
+        }
+      : {
+          id: projectId,
+          userId,
+        },
+
     data: {
-      ...(data.title !== undefined && { title: data.title }),
-      ...(data.description !== undefined && { description: data.description }),
+      ...(data.title !== undefined && {
+        title: data.title,
+      }),
+
+      ...(data.description !== undefined && {
+        description: data.description,
+      }),
+
       ...(data.startDate !== undefined && {
         startDate: new Date(data.startDate),
       }),
+
       ...(data.endDate !== undefined && {
         endDate: data.endDate ? new Date(data.endDate) : null,
       }),
-      ...(data.tags !== undefined && { tags: data.tags }),
+
+      ...(data.tags !== undefined && {
+        tags: data.tags,
+      }),
     },
   });
 };
 
-export const removeProject = async (userId: string, projectId: string) => {
+export const removeProject = async (
+  userId: string,
+  projectId: string,
+  isAdmin = false
+) => {
   return prisma.project.delete({
-    where: {
-      id: projectId,
-      userId,
-    },
+    where: isAdmin
+      ? {
+          id: projectId,
+        }
+      : {
+          id: projectId,
+          userId,
+        },
   });
 };

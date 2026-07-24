@@ -5,8 +5,11 @@ import {
   updateUserAttribute,
   deleteUserAttribute,
 } from "../controllers/userAttribute.controller.js";
+import { authMiddleware } from "../middleware/auth.middleware.js";
 
 const routerUserAttribute: Router = Router();
+
+routerUserAttribute.use(authMiddleware);
 
 routerUserAttribute.get("/me/attributes", getUserAttributes);
 routerUserAttribute.post("/me/attributes", createUserAttribute);

@@ -26,12 +26,13 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/auth", routerAuth);
-app.use("/api/attributes", authMiddleware, routerAttribute);
-app.use("/api/vacancies", authMiddleware, routerVacancy);
+
+app.use("/api/attributes", routerAttribute);
+app.use("/api/vacancies", routerVacancy);
 app.use("/api/users", routerUser);
-app.use("/api", authMiddleware, routerUserAttribute);
-app.use("/api", authMiddleware, routerProject);
-app.use("/api", authMiddleware, routerCv);
+app.use("/api", routerUserAttribute);
+app.use("/api", routerProject);
+app.use("/api", routerCv);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

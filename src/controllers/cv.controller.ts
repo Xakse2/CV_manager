@@ -1,6 +1,12 @@
 import type { Request, Response } from "express";
 import { Prisma } from "@prisma/client";
-import { getGeneratedCV, createCV, getMyCVs } from "../services/cv.service.js";
+import {
+  getGeneratedCV,
+  createCV,
+  getMyCVs,
+  publishCVService,
+  toggleLikeCV,
+} from "../services/cv.service.js";
 import { updateAttribute } from "../services/userAttribute.service.js";
 
 export const getCV = async (req: Request<{ id: string }>, res: Response) => {
@@ -60,6 +66,33 @@ export const getMyCV = async (req: Request, res: Response) => {
   } catch (error) {
     return res.status(500).json({
       error: error instanceof Error ? error.message : "Failed to get CVs",
+    });
+  }
+};
+
+export const publishCV = async (
+  req: Request<{ id: string }>,
+  res: Response
+) => {
+  try {
+    const cv = await publishCVService(req.user.userId, req.params.id);
+
+    return res.json(cv);
+  } catch (error) {
+    return res.status(400).json({
+      error: error instanceof Error ? error.message : "Publish failed",
+    });
+  }
+};
+
+export const addLike = async (req: Request<{ id: string }>, res: Response) => {
+  try {
+    const recruiterId = req.user.userId;
+    const like = await toggleLikeCV(recruiterId, req.params.id);
+    return res.json(like);
+  } catch (error) {
+    return res.status(400).json({
+      error: error instanceof Error ? error.message : "Failed to like CV",
     });
   }
 };

@@ -9,6 +9,7 @@ export const getGeneratedCV = async (cvId: string) => {
   const cv = await prisma.cV.findUnique({
     where: { id: cvId },
     include: {
+      Like: true,
       User: {
         include: {
           UserAttribute: true,
@@ -50,6 +51,7 @@ export const getGeneratedCV = async (cvId: string) => {
   return {
     id: cv.id,
     position: cv.Position.title,
+    likes: cv.Like.length,
     candidate: `${cv.User.firstName} ${cv.User.lastName}`,
     attributes: virtualAttributes,
     projects: cv.CVProject.map((cvp) => cvp.Project),
@@ -95,4 +97,88 @@ export const getMyCVs = async (userId: string) => {
       },
     },
   });
+};
+
+export const publishCVService = async (userId: string, cvId: string) => {
+  const cv = await prisma.cV.findUnique({
+    where: { id: cvId },
+    include: {
+      Position: {
+        include: {
+          PositionAttribute: true,
+        },
+      },
+      User: {
+        include: {
+          UserAttribute: true,
+        },
+      },
+    },
+  });
+
+  if (!cv) {
+    throw new Error("CV not found");
+  }
+
+  if (cv.userId !== userId) {
+    throw new Error("Access denied");
+  }
+
+  for (const attribute of cv.Position.PositionAttribute) {
+    if (!attribute.required) continue;
+
+    const value = cv.User.UserAttribute.find(
+      (item) => item.attributeId === attribute.attributeId
+    );
+
+    if (!value || !value.value) {
+      throw new Error("Required attributes are not filled");
+    }
+  }
+
+  return prisma.cV.update({
+    where: {
+      id: cvId,
+    },
+    data: {
+      isPublished: true,
+    },
+  });
+};
+
+export const toggleLikeCV = async (recruiterId: string, cvId: string) => {
+  const existingLike = await prisma.like.findUnique({
+    where: {
+      cvId_recruiterId: {
+        cvId,
+        recruiterId,
+      },
+    },
+  });
+
+  if (existingLike) {
+    await prisma.like.delete({
+      where: {
+        cvId_recruiterId: {
+          cvId,
+          recruiterId,
+        },
+      },
+    });
+
+    return {
+      liked: false,
+    };
+  }
+
+  await prisma.like.create({
+    data: {
+      cvId,
+      recruiterId,
+    },
+  });
+
+  return {
+    liked: true,
+  };
 };
